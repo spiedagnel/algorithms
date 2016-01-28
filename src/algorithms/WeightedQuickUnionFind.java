@@ -52,23 +52,23 @@ public class WeightedQuickUnionFind {
 
     public static void main(String[] args) {
         WeightedQuickUnionFind wuf = new WeightedQuickUnionFind(10);
-        wuf.union(1,7);
+        wuf.union(7,3);
         wuf.print();
-        wuf.union(5, 7);
+        wuf.union(0, 4);
+        wuf.print();
+        wuf.union(1, 6);
+        wuf.print();
+        wuf.union(0, 6);
         wuf.print();
         wuf.union(9, 7);
         wuf.print();
-        wuf.union(3, 6);
+        wuf.union(3, 5);
         wuf.print();
-        wuf.union(8, 4);
+        wuf.union(7, 8);
         wuf.print();
-        wuf.union(6, 8);
+        wuf.union(2, 8);
         wuf.print();
-        wuf.union(7, 2);
-        wuf.print();
-        wuf.union(6, 9);
-        wuf.print();
-        wuf.union(3,0);
+        wuf.union(3,4);
         wuf.print();
     }
 }

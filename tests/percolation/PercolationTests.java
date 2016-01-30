@@ -39,7 +39,7 @@ public class PercolationTests {
     public void testMatrixOfSize2DoeNotPercolateWhen2DiagSiteOpen() {
         Percolation p = new Percolation(2);
         p.open(1, 1);
-        p.open(2, 2);
+        p.open(1 , 2);
         assert (!p.percolates());
     }
 }

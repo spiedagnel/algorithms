@@ -1,4 +1,5 @@
 package percolation;
+
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 /**
@@ -8,9 +9,9 @@ public class Percolation {
 
     private WeightedQuickUnionUF wquf;
     private boolean[] states;
-    private boolean[] emptyFull;
-    private boolean[] bottom;
-    private boolean openedBottom;
+    private boolean[] topConnected;
+    private boolean[] bottomConnected;
+
     private boolean percolated;
     private int N;
 
@@ -21,8 +22,9 @@ public class Percolation {
             throw new IllegalArgumentException();
         wquf = new WeightedQuickUnionUF(N*N+2);
         states = new boolean[N*N+1];
-        emptyFull = new boolean[N*N+1];
-        bottom = new boolean[N];
+        topConnected = new boolean[N*N+1];
+        bottomConnected = new boolean[N*N+1];
+
         for (int i = 0; i <= N*N; i++) {
             states[i] = false;
         }
@@ -39,49 +41,49 @@ public class Percolation {
     public void open(int i, int j) {
         validateEntry(i, j);
         int idx = getIndex(i, j);
-        boolean flowing = false;
+        boolean connectedToTop = false;
+        boolean connectedToBottom = false;
         if (!isOpen(i, j)) {
             states[idx] = true;
-            if (i > 1 && states[getIndex(i-1, j)]) {
-                wquf.union(idx, getIndex(i - 1, j));
-                flowing = emptyFull[getIndex(i - 1, j)];
+            int indexNeighbor = getIndex(i - 1, j);
+            if (i > 1 && states[indexNeighbor]) {
+                int rootToConnect = wquf.find(indexNeighbor);
+                connectedToTop = connectedToTop || topConnected[rootToConnect];
+                connectedToBottom = connectedToBottom || bottomConnected[rootToConnect];
+                wquf.union(idx, indexNeighbor);
             } else if (i == 1) {
                 wquf.union(idx, 0);
-                emptyFull[idx] = true;
-                flowing = flowing || true;
+                connectedToTop = true;
             }
-            if (j > 1 && states[getIndex(i, j-1)]) {
-                wquf.union(idx, getIndex(i, j - 1));
-                flowing = flowing || emptyFull[getIndex(i, j - 1)];
+            indexNeighbor = getIndex(i, j - 1);
+            if (j > 1 && states[indexNeighbor]) {
+                int rootToConnect = wquf.find(indexNeighbor);
+                connectedToTop = connectedToTop || topConnected[rootToConnect];
+                connectedToBottom = connectedToBottom || bottomConnected[rootToConnect];
+                wquf.union(idx, indexNeighbor);
             }
-            if (j < N && states[getIndex(i, j+1)]) {
-                wquf.union(idx, getIndex(i, j + 1));
-                flowing = flowing || emptyFull[getIndex(i, j + 1)];
+            indexNeighbor = getIndex(i, j + 1);
+            if (j < N && states[indexNeighbor]) {
+                int rootToConnect = wquf.find(indexNeighbor);
+                connectedToTop = connectedToTop || topConnected[rootToConnect];
+                connectedToBottom = connectedToBottom || bottomConnected[rootToConnect];
+                wquf.union(idx, indexNeighbor);
+
             }
-            if (i < N && states[getIndex(i+1, j)]) {
-                wquf.union(idx, getIndex(i + 1, j));
-                flowing = flowing || emptyFull[getIndex(i + 1, j)];
+            indexNeighbor = getIndex(i + 1, j);
+            if (i < N && states[indexNeighbor]) {
+                int rootToConnect = wquf.find(indexNeighbor);
+                connectedToTop = connectedToTop || topConnected[rootToConnect];
+                connectedToBottom = connectedToBottom || bottomConnected[rootToConnect];
+                wquf.union(idx, indexNeighbor);
             } else if (i == N) {
-                openedBottom = true;
-                bottom[j-1] = true;
-                int k = j-2;
-                while (k >= 0 && bottom[k]) {
-                    bottom[k] = false;
-                    k -= 1;
-                }
-                k = j;
-                while (k < N && bottom[k]) {
-                    bottom[k] = false;
-                    k += 1;
-                }
+                connectedToBottom = true;
             }
-            if(flowing) {
-                for (int k = 0; k < N; k++) {
-                    if (bottom[k] && wquf.connected(idx, getIndex(N, k + 1))) {
-                        percolated = true;
-                    }
-                }
-            }
+            idx = wquf.find(idx);
+            topConnected[idx] = connectedToTop;
+            bottomConnected[idx] = connectedToBottom;
+            if (connectedToBottom && connectedToTop)
+                percolated = true;
         }
     }
     /**
@@ -111,31 +113,11 @@ public class Percolation {
     public boolean isFull(int i, int j) {
         validateEntry(i, j);
         int index = getIndex(i, j);
-        if (emptyFull[index]) {
-            return true;
-        } else {
-            if (wquf.connected(index, 0)) {
-                emptyFull[index] = true;
-                return true;
-            }
-        }
-        return false;
+        return topConnected[wquf.find(index)];
     }
 
     public boolean percolates() {
-        if (percolated) {
-            return true;
-        }
-        if (!openedBottom) {
-            return false;
-        }
-//        for (int i = 0; i < N; i++) {
-//            if (bottom[i] && wquf.connected(0, getIndex(N, i+1))) {
-//                percolated = true;
-//                return true;
-//            }
-//        }
-        return false;
+        return percolated;
     }
 
     public static void main(String[] args) {

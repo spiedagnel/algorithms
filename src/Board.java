@@ -45,7 +45,7 @@ public class Board {
         int count = 0;
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                if (this.blocks[i][j] != i*N + j)
+                if (this.blocks[i][j] != i*N + j+1)
                     count++;
             }
         }
@@ -183,5 +183,11 @@ public class Board {
         StdOut.println(b.twin());
         for ( Board n : b.neighbors())
             StdOut.println(n);
+
+        int[] [] j = {{0,1},{2,3}};
+        Board a = new Board(j);
+        StdOut.println(a);
+        StdOut.println(a.hamming());
+        StdOut.println(a.manhattan());
     }
 }

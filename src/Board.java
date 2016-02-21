@@ -73,7 +73,7 @@ public class Board {
     public boolean isGoal(){
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                if (this.blocks[i][j] != i*N + j+1)
+                if (this.blocks[i][j] != 0 && this.blocks[i][j] != i*N + j+1)
                     return false;
             }
         }
@@ -110,7 +110,7 @@ public class Board {
             if(this.dimension() == boardY.dimension()){
                 for (int i = 0; i < N; i++) {
                     for (int j = 0; j < N; j++) {
-                        if (this.blocks[i][j] != boardY.blocks[i][j])
+                        if ( this.blocks[i][j] != boardY.blocks[i][j])
                             return false;
                     }
                     return true;
@@ -135,7 +135,7 @@ public class Board {
 
             list.add(b);
         }
-        if (i0 < N){
+        if (i0 < N-1){
             b = new Board(this.blocks);
             b.blocks[i0][j0] = this.blocks[i0+1][j0];
             b.blocks[i0+1][j0] = 0;
@@ -149,7 +149,7 @@ public class Board {
             b.j0 = j0-1;
             list.add(b);
         }
-        if (j0 < N){
+        if (j0 < N-1){
             b = new Board(this.blocks);
             b.blocks[i0][j0] = this.blocks[i0][j0+1];
             b.blocks[i0][j0+1] = 0;
@@ -191,5 +191,9 @@ public class Board {
         StdOut.println(a);
         StdOut.println(a.hamming());
         StdOut.println(a.manhattan());
+
+        int[] [] k = {{1,2},{3,0}};
+        Board c = new Board(k);
+        StdOut.println(c.isGoal());
     }
 }

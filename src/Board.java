@@ -60,8 +60,10 @@ public class Board {
         int count = 0;
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                count += Math.abs(i-this.blocks[i][j]/N);
-                count += Math.abs(j-this.blocks[i][j]%N);
+                if(this.blocks[i][j] != 0) {
+                    count += Math.abs(i - (this.blocks[i][j] - 1) / N);
+                    count += Math.abs(j - (this.blocks[i][j] - 1) % N);
+                }
             }
         }
         return count;

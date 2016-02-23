@@ -87,18 +87,15 @@ public class Board {
      * @return a board that is obtained by exchanging any pair of blocks
      */
     public Board twin() {
-        int[][] twin = new int[N][N];
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                twin[i][j] = this.blocks[i][j];
-            }
-        }
+
+        Board twinBoard = new Board(this.blocks);
+
         int swap;
         int iswap = (i0 == 0)?1:0;
-        swap = twin[iswap][0];
-        twin[iswap][0] = twin[iswap][1];
-        twin[iswap][1] = swap;
-        return new Board(twin);
+        swap = twinBoard.blocks[iswap][0];
+        twinBoard.blocks[iswap][0] = twinBoard.blocks[iswap][1];
+        twinBoard.blocks[iswap][1] = swap;
+        return twinBoard;
     }
 
     /**

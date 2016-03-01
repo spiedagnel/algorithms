@@ -6,25 +6,27 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 public class Solver {
 
-    private MinPQ<Node> initialQueue;
-    private MinPQ<Node> twinQueue;
+    private MinPQ<Node> pQueue;
     private boolean solvable;
-    private Node goal;
+    private Board initial;
+    private Collection<Board> solution;
+
 
     private class Node implements Comparable{
         private Board b;
         private Node previous;
         private int moves;
+        private int priority;
 
         public Node(Board b, Node previous) {
             this.b = b;
             this.previous = previous;
             this.moves = previous == null?0:previous.moves+1;
+            this.priority = this.moves + this.getB().manhattan();
         }
 
         public Board getB() {
@@ -39,10 +41,7 @@ public class Solver {
         @Override
         public int compareTo(Object o) {
             Node n2 = (Node)o;
-            Board b2 = n2.getB();
-            int m1 = this.getB().manhattan();
-            int m2 = b2.manhattan();
-            return (this.moves+m1) - (n2.moves+m2);
+            return (this.priority) - (n2.priority);
         }
     }
     /**
@@ -50,39 +49,51 @@ public class Solver {
      * @param initial find a solution to the initial board (using the A* algorithm)
      */
     public Solver(Board initial) {
-        initialQueue = new MinPQ();
-        twinQueue = new MinPQ();
-        initialQueue.insert(new Node(initial,null));
-        twinQueue.insert(new Node(initial.twin(),null));
-        solve();
+        this.initial = initial;
+        pQueue = new MinPQ<>();
+        Node x = new Node(initial, null);
+        pQueue.insert(x);
+        pQueue.insert(new Node(initial.twin(),null));
+        if(initial.isGoal()){
+            this.solution = new ArrayList<>();
+            this.solution.add(initial);
+            this.solvable = true;
+        } else
+            solve();
     }
 
     private void solve(){
-        boolean done = false;
-        while(!done){
-            Node n = processQueue(initialQueue);
-            if (n!= null){
-                this.goal = n;
-                this.solvable = true;
+        Node n = null;
+        while(!pQueue.isEmpty()){
+            n = processQueue(pQueue);
+            if (n != null) {
                 break;
             }
-            n = processQueue(twinQueue);
-            if (n!= null){
-                this.solvable = false;
-                done = true;
-            }
+
+        }
+        ArrayList<Board> list = new ArrayList<>();
+        while (n!=null) {
+            list.add(n.getB());
+            n = n.previous;
+        }
+        Collections.reverse(list);
+        if(list.get(0).equals(this.initial)){
+            solvable = true;
+            this.solution = list;
         }
     }
 
     private Node processQueue(MinPQ<Node> queue) {
         Node node = queue.delMin();
+
         Iterable<Board> neighbors = node.getB().neighbors();
         for (Board b : neighbors){
             if (b.isGoal()){
                 return new Node(b,node);
 
-            } else if (!b.equals(node)){
-                queue.insert(new Node(b,node));
+            } else {
+                if(node.getPrevious() == null || !b.equals(node.getPrevious().getB()))
+                    queue.insert(new Node(b,node));
             }
         }
         return null;
@@ -101,8 +112,8 @@ public class Solver {
      * @return min number of moves to solve initial board; -1 if unsolvable
      */
     public int moves() {
-        if(goal != null)
-            return goal.moves;
+        if(solvable)
+            return solution.size()-1;
         return -1;
     }
 
@@ -111,14 +122,9 @@ public class Solver {
      * @return sequence of boards in a shortest solution; null if unsolvable
      */
     public Iterable<Board> solution() {
-        ArrayList list = new ArrayList();
-        if (goal != null){
-            Node n = goal;
-            while (n!=null) {
-                list.add(n);
-                n = n.previous;
-            }
-            Collections.reverse(list);
+        ArrayList<Board> list = new ArrayList<>();
+        if (solvable){
+            list.addAll(solution);
             return list;
         }
         return null;

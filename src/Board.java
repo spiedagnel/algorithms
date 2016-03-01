@@ -45,8 +45,10 @@ public class Board {
         int count = 0;
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                if (this.blocks[i][j] != i*N + j+1)
-                    count++;
+                if(this.blocks[i][j] != 0) {
+                    if (this.blocks[i][j] != i * N + j + 1)
+                        count++;
+                }
             }
         }
         return count;
@@ -85,18 +87,15 @@ public class Board {
      * @return a board that is obtained by exchanging any pair of blocks
      */
     public Board twin() {
-        int[][] twin = new int[N][N];
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                twin[i][j] = this.blocks[i][j];
-            }
-        }
+
+        Board twinBoard = new Board(this.blocks);
+
         int swap;
         int iswap = (i0 == 0)?1:0;
-        swap = twin[iswap][0];
-        twin[iswap][0] = twin[iswap][1];
-        twin[iswap][1] = swap;
-        return new Board(twin);
+        swap = twinBoard.blocks[iswap][0];
+        twinBoard.blocks[iswap][0] = twinBoard.blocks[iswap][1];
+        twinBoard.blocks[iswap][1] = swap;
+        return twinBoard;
     }
 
     /**
@@ -113,8 +112,8 @@ public class Board {
                         if ( this.blocks[i][j] != boardY.blocks[i][j])
                             return false;
                     }
-                    return true;
                 }
+                return true;
             }
         }
         return false;
@@ -178,7 +177,7 @@ public class Board {
     }
 
     public static void main(String[] args) {
-        int[] [] i = {{0,1,4},{2,3,5},{6,7,8}};
+        int[] [] i = {{5,8,1},{0,2,7},{6,3,4}};
         Board b = new Board(i);
         StdOut.println(b);
         StdOut.println(b.isGoal());
@@ -186,9 +185,10 @@ public class Board {
         for ( Board n : b.neighbors())
             StdOut.println(n);
 
-        int[] [] j = {{0,1},{2,3}};
+        int[] [] j = {{5,8,1},{3,4,0},{7,6,2}};
         Board a = new Board(j);
         StdOut.println(a);
+        StdOut.println(a.equals(b));
         StdOut.println(a.hamming());
         StdOut.println(a.manhattan());
 

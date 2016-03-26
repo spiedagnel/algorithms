@@ -2,6 +2,7 @@ package wordnet;
 
 import edu.princeton.cs.algs4.*;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by samuel on 23/03/16.
@@ -71,28 +72,46 @@ public class SAP {
         if (solution.containsKey(key)){
             return solution.get(key);
         } else {
-            HashMap<Integer, Integer> visited = new HashMap<>();
-            Queue<V> q = new Queue<>();
-            q.enqueue(new V(v, 0));
-            q.enqueue(new V(w, 0));
-            while (!q.isEmpty()) {
-                V currentNode = q.dequeue();
-                if (visited.containsKey(currentNode.vertex)) {
-                    V value = new V(currentNode.vertex, currentNode.distance + visited.get(currentNode.vertex));
-                    solution.put(key, value);
-                    solution.put(rkey, value);
-                    return value;
-                } else {
-                    visited.put(currentNode.vertex, currentNode.distance);
-                    for (int adj : dg.adj(currentNode.vertex)) {
-                        q.enqueue(new V(adj, currentNode.distance + 1));
-                    }
+            HashMap<Integer, Integer> visitedV = new HashMap<>();
+            HashMap<Integer, Integer> visitedW = new HashMap<>();
+            Queue<V> qV = new Queue<>();
+            Queue<V> qW = new Queue<>();
+            qV.enqueue(new V(v, 0));
+            qW.enqueue(new V(w, 0));
+            visitedV.put(v,0);
+            visitedW.put(w,0);
+            V ancestor = null;
+            while (!qV.isEmpty() || !qW.isEmpty()) {
+                if(!qV.isEmpty())
+                    ancestor = processQueue(qV, ancestor,visitedV,visitedW);
+
+                if(!qW.isEmpty())
+                    ancestor = processQueue(qW, ancestor,visitedW,visitedV);
+
+            }
+            solution.put(key, ancestor);
+            solution.put(rkey, ancestor);
+            return ancestor;
+        }
+    }
+
+    private V processQueue(Queue<V> qV, V ancestor, Map<Integer,Integer> currentVisited,Map<Integer,Integer> targetVisited ) {
+        V currentNode = qV.dequeue();
+
+        if (targetVisited.containsKey(currentNode.vertex)) {
+            V value = new V(currentNode.vertex, currentNode.distance + targetVisited.get(currentNode.vertex));
+            if (ancestor == null || value.distance < ancestor.distance)
+            ancestor = value;
+        }
+            //currentVisited.put(currentNode.vertex, currentNode.distance);
+            for (int adj : dg.adj(currentNode.vertex)) {
+                if(!currentVisited.containsKey(adj) || currentVisited.get(adj) > currentNode.distance) {
+                    qV.enqueue(new V(adj, currentNode.distance + 1));
+                    currentVisited.put(adj, currentNode.distance + 1);
                 }
             }
-            solution.put(key, null);
-            solution.put(rkey, null);
-            return null;
-        }
+
+        return ancestor;
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
@@ -106,11 +125,41 @@ public class SAP {
     }
 
 
+    private V findAncestor(Iterable<Integer> V, Iterable<Integer> Y){
+        if(V == null || Y == null)
+            throw new NullPointerException();
+        V min = null;
+        for (int v : V){
+            for ( int y : Y){
+                V ancestor = findAncestor(v,y);
+                if ((ancestor != null) && ((min == null) || ( ancestor.distance < min.distance))){
+                    min = ancestor;
+                }
+            }
+        }
+        return min;
+    }
+
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
-   // public int length(Iterable<Integer> v, Iterable<Integer> w)
+    public int length(Iterable<Integer> v, Iterable<Integer> w){
+
+        V ancestor = findAncestor(v, w);
+        if(ancestor == null){
+            return -1;
+        } else {
+            return ancestor.distance;
+        }
+    }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
-  //  public int ancestor(Iterable<Integer> v, Iterable<Integer> w)
+    public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
+        V ancestor = findAncestor(v, w);
+        if(ancestor == null){
+            return -1;
+        } else {
+            return ancestor.vertex;
+        }
+    }
 
     // do unit testing of this class
     public static void main(String[] args){
